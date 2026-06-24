@@ -19,7 +19,7 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     return openDatabase(
       join(dbPath, 'gatodex.db'),
-      version: 2,
+      version: 3,
       onCreate: (db, _) => db.execute('''
         CREATE TABLE cats (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,12 +28,30 @@ class DatabaseService {
           longitude REAL NOT NULL,
           captured_at TEXT NOT NULL,
           entry_number INTEGER NOT NULL,
-          name TEXT
+          name TEXT,
+          card_name TEXT,
+          rarity TEXT,
+          element TEXT,
+          power INTEGER,
+          agility INTEGER,
+          charisma INTEGER,
+          ability TEXT,
+          card_image_url TEXT
         )
       '''),
       onUpgrade: (db, oldVersion, _) async {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE cats ADD COLUMN name TEXT');
+        }
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE cats ADD COLUMN card_name TEXT');
+          await db.execute('ALTER TABLE cats ADD COLUMN rarity TEXT');
+          await db.execute('ALTER TABLE cats ADD COLUMN element TEXT');
+          await db.execute('ALTER TABLE cats ADD COLUMN power INTEGER');
+          await db.execute('ALTER TABLE cats ADD COLUMN agility INTEGER');
+          await db.execute('ALTER TABLE cats ADD COLUMN charisma INTEGER');
+          await db.execute('ALTER TABLE cats ADD COLUMN ability TEXT');
+          await db.execute('ALTER TABLE cats ADD COLUMN card_image_url TEXT');
         }
       },
     );
@@ -57,12 +75,51 @@ class DatabaseService {
   Future<void> delete(int id, String imagePath) async {
     final db = await database;
     await db.delete('cats', where: 'id = ?', whereArgs: [id]);
-    try { await File(imagePath).delete(); } catch (_) {}
+    try {
+      await File(imagePath).delete();
+    } catch (_) {}
   }
 
   Future<void> updateName(int id, String name) async {
     final db = await database;
     await db.update('cats', {'name': name}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> updateCard(
+    int id, {
+    required String cardName,
+    required String rarity,
+    required String element,
+    required int power,
+    required int agility,
+    required int charisma,
+    required String ability,
+  }) async {
+    final db = await database;
+    await db.update(
+      'cats',
+      {
+        'card_name': cardName,
+        'rarity': rarity,
+        'element': element,
+        'power': power,
+        'agility': agility,
+        'charisma': charisma,
+        'ability': ability,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> updateCardImageUrl(int id, String url) async {
+    final db = await database;
+    await db.update(
+      'cats',
+      {'card_image_url': url},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<List<CatEntry>> getAll() async {
@@ -85,7 +142,11 @@ class DatabaseService {
     return (result.first['c'] as int?) ?? 0;
   }
 
-  Future<CatEntry?> findNearby(double lat, double lng, {double radiusMeters = 50}) async {
+  Future<CatEntry?> findNearby(
+    double lat,
+    double lng, {
+    double radiusMeters = 50,
+  }) async {
     final all = await getAll();
     for (final cat in all) {
       if (cat.latitude == 0.0 && cat.longitude == 0.0) continue;
@@ -99,7 +160,8 @@ class DatabaseService {
     const r = 6371000.0;
     final dLat = _rad(lat2 - lat1);
     final dLon = _rad(lon2 - lon1);
-    final a = _sin2(dLat / 2) +
+    final a =
+        _sin2(dLat / 2) +
         _sin2(dLon / 2) * _cos(_rad(lat1)) * _cos(_rad(lat2));
     return r * 2 * _asin(_sqrt(a));
   }
@@ -112,7 +174,9 @@ class DatabaseService {
   double _sqrt(double x) {
     if (x <= 0) return 0;
     var r = x;
-    for (var i = 0; i < 20; i++) { r = (r + x / r) / 2; }
+    for (var i = 0; i < 20; i++) {
+      r = (r + x / r) / 2;
+    }
     return r;
   }
 }

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:237561692289:android:fa6687df3d47297a24cd80",
+        "mobilesdk_app_id": "1:237561692289:android:b3a5f51f27361a2f24cd80",
         "android_client_info": {
-          "package_name": "com.example.gatodex"
+          "package_name": "com.diegoemanuel.gatodex"
         }
       },
       "oauth_client": [],

@@ -2,15 +2,16 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../app_theme.dart';
 import '../models/cat_entry.dart';
 import '../services/database_service.dart';
 import 'capture_screen.dart';
+import 'cat_detail_screen.dart';
 import 'map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
-
   const HomeScreen({super.key, required this.cameras});
 
   @override
@@ -35,11 +36,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openCapture() async {
     final captured = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => CaptureScreen(cameras: widget.cameras),
-      ),
+      MaterialPageRoute(builder: (_) => CaptureScreen(cameras: widget.cameras)),
     );
     if (captured == true) _loadCats();
+  }
+
+  Future<void> _shareGallery() async {
+    if (_cats.isEmpty) return;
+    final lines = _cats.map((c) {
+      final name = c.name != null ? ' — ${c.name}' : '';
+      return '🐱 #${c.entryNumber.toString().padLeft(3, '0')}$name';
+    }).join('\n');
+    await Share.share(
+      '🐾 Minha Gatodex tem ${_cats.length} gato${_cats.length == 1 ? '' : 's'}!\n\n$lines\n\n✨ Transforme, Colecione, Ame!\nBaixe o Gatodex e capture os gatos do seu bairro.',
+      subject: 'Minha Gatodex 🐾',
+    );
   }
 
   @override
@@ -64,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: GC.bgDeep,
+      titleSpacing: 16,
       title: Row(
         children: [
           const Text('🐾', style: TextStyle(fontSize: 22)),
@@ -72,30 +84,23 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'GATODEX',
-                style: TextStyle(
-                  color: GC.gold,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
-                  letterSpacing: 2,
-                  height: 1.1,
-                ),
-              ),
-              const Text(
+              Text('GATODEX', style: gfDisplay(22, c: GC.gold)),
+              Text(
                 'Transforme, Colecione, Ame!',
-                style: TextStyle(
-                  color: GC.textMuted,
-                  fontSize: 9,
-                  letterSpacing: 0.8,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: gfBody(9, w: FontWeight.w600, c: GC.textMuted),
               ),
             ],
           ),
         ],
       ),
       actions: [
+        if (!_loading && _cats.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, size: 20),
+            color: GC.textMuted,
+            tooltip: 'Compartilhar coleção',
+            onPressed: _shareGallery,
+          ),
         IconButton(
           icon: const Text('🗺️', style: TextStyle(fontSize: 20)),
           tooltip: 'Mapa de gatos',
@@ -106,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         if (!_loading)
           Container(
-            margin: const EdgeInsets.only(right: 16),
+            margin: const EdgeInsets.only(right: 14),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: GC.purple.withValues(alpha: 0.25),
@@ -116,14 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '${_cats.length}',
-                  style: const TextStyle(
-                    color: GC.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
+                Text('${_cats.length}', style: gfDisplay(13, c: GC.gold)),
                 const SizedBox(width: 3),
                 const Text('🐱', style: TextStyle(fontSize: 13)),
               ],
@@ -135,13 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           height: 1,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                GC.gold.withValues(alpha: 0.3),
-                Colors.transparent,
-              ],
-            ),
+            gradient: LinearGradient(colors: [
+              Colors.transparent,
+              GC.gold.withValues(alpha: 0.3),
+              Colors.transparent,
+            ]),
           ),
         ),
       ),
@@ -189,25 +185,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Sua Gatodex está vazia!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Sua Gatodex está vazia!', style: gfDisplay(20, c: Colors.white)),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Encontre um gato e toque em Capturar.',
-            style: TextStyle(color: GC.textMuted, fontSize: 14),
+            style: gfBody(14, c: GC.textMuted),
           ),
           const SizedBox(height: 36),
-          _GoldButton(
-            onPressed: _openCapture,
-            icon: '📷',
-            label: 'Capturar primeiro gato',
-          ),
+          _GoldButton(onPressed: _openCapture, icon: '📷', label: 'Capturar primeiro gato'),
         ],
       ),
     );
@@ -223,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
         childAspectRatio: 0.72,
       ),
       itemCount: _cats.length,
-      itemBuilder: (_, i) => _CatCard(cat: _cats[i], onDelete: _loadCats),
+      itemBuilder: (_, i) => _CatCard(cat: _cats[i], onReload: _loadCats),
     );
   }
 
@@ -237,11 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(
-            color: GC.gold.withValues(alpha: 0.45),
-            blurRadius: 18,
-            offset: const Offset(0, 5),
-          ),
+          BoxShadow(color: GC.gold.withValues(alpha: 0.45), blurRadius: 18, offset: const Offset(0, 5)),
         ],
       ),
       child: FloatingActionButton.extended(
@@ -253,20 +234,13 @@ class _HomeScreenState extends State<HomeScreen> {
         highlightElevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         icon: const Text('📷', style: TextStyle(fontSize: 20)),
-        label: const Text(
-          'Capturar',
-          style: TextStyle(
-            color: Color(0xFF1A0050),
-            fontWeight: FontWeight.w900,
-            fontSize: 15,
-            letterSpacing: 0.5,
-          ),
-        ),
+        label: Text('Capturar', style: gfDisplay(15, c: GC.deepPurple)),
       ),
     );
   }
 }
 
+// ── Botão dourado reutilizável ─────────────────────────────────────────────
 class _GoldButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String icon;
@@ -278,43 +252,31 @@ class _GoldButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [GC.gold, Color(0xFFFFB300)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: const LinearGradient(colors: [GC.gold, Color(0xFFFFB300)]),
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: GC.gold.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: GC.gold.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: ElevatedButton.icon(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          foregroundColor: const Color(0xFF1A0050),
+          foregroundColor: GC.deepPurple,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         ),
         icon: Text(icon, style: const TextStyle(fontSize: 18)),
-        label: Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
+        label: Text(label, style: gfDisplay(15, c: GC.deepPurple)),
       ),
     );
   }
 }
 
+// ── Card do gato ──────────────────────────────────────────────────────────
 class _CatCard extends StatelessWidget {
   final CatEntry cat;
-  final VoidCallback onDelete;
-  const _CatCard({required this.cat, required this.onDelete});
+  final VoidCallback onReload;
+  const _CatCard({required this.cat, required this.onReload});
 
   @override
   Widget build(BuildContext context) {
@@ -322,161 +284,273 @@ class _CatCard extends StatelessWidget {
     final hasLocation = cat.latitude != 0.0 || cat.longitude != 0.0;
 
     return GestureDetector(
-      onLongPress: () => _confirmDelete(context),
-      child: _buildCard(date, hasLocation),
-    );
-  }
-
-  Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: GC.bgCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Excluir gato? 🗑️', style: TextStyle(color: Colors.white)),
-        content: Text(
-          'Tem certeza que quer remover ${cat.name ?? 'Gato #${cat.entryNumber}'} da sua Gatodex? Essa ação não pode ser desfeita.',
-          style: const TextStyle(color: GC.textMuted),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CatDetailScreen(cat: cat, onReload: onReload),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar', style: TextStyle(color: GC.textMuted)),
+      ),
+      onLongPress: () => _showOptions(context),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF2A1565), GC.bgCard],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-            child: const Text('Excluir', style: TextStyle(fontWeight: FontWeight.bold)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: GC.gold.withValues(alpha: 0.35), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: GC.purple.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 5)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.file(
+                      File(cat.imagePath),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const ColoredBox(
+                        color: GC.bgElevated,
+                        child: Center(child: Text('🐈', style: TextStyle(fontSize: 40))),
+                      ),
+                    ),
+                    // fade bottom
+                    Positioned(
+                      bottom: 0, left: 0, right: 0,
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, GC.bgCard.withValues(alpha: 0.9)],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // badge dourado
+                    Positioned(
+                      top: 8, right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: GC.gold,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [BoxShadow(color: GC.gold.withValues(alpha: 0.5), blurRadius: 6)],
+                        ),
+                        child: Text(
+                          '#${cat.entryNumber.toString().padLeft(3, '0')}',
+                          style: gfDisplay(10, c: GC.deepPurple),
+                        ),
+                      ),
+                    ),
+                    // indicador de long press (hint sutil)
+                    Positioned(
+                      top: 8, left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('···', style: gfBody(10, c: Colors.white54)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cat.name ?? 'Gato #${cat.entryNumber}',
+                      style: gfDisplay(13, c: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Text('📅', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 3),
+                        Text(date, style: gfBody(10, c: GC.textMuted)),
+                        const Spacer(),
+                        Text(
+                          hasLocation ? '📍' : '❓',
+                          style: TextStyle(fontSize: 11, color: hasLocation ? GC.pink : Colors.white24),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
-    if (confirmed == true) {
-      await DatabaseService().delete(cat.id!, cat.imagePath);
-      onDelete();
-    }
   }
 
-  Widget _buildCard(String date, bool hasLocation) {
+  void _showOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CardOptionsSheet(cat: cat, onReload: onReload),
+    );
+  }
+}
+
+// ── Bottom sheet de opções do card ────────────────────────────────────────
+class _CardOptionsSheet extends StatelessWidget {
+  final CatEntry cat;
+  final VoidCallback onReload;
+  const _CardOptionsSheet({required this.cat, required this.onReload});
+
+  @override
+  Widget build(BuildContext context) {
+    final catLabel = cat.name ?? 'Gato #${cat.entryNumber.toString().padLeft(3, '0')}';
+
     return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2A1565), GC.bgCard],
+          colors: [GC.bgElevated, GC.bgCard],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: GC.gold.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: GC.purple.withValues(alpha: 0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: GC.purple.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Cabeçalho do gato
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: GC.purple.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: GC.gold.withValues(alpha: 0.3)),
+                ),
+                child: const Text('🐱', style: TextStyle(fontSize: 28)),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(catLabel, style: gfDisplay(17, c: Colors.white)),
+                  Text(
+                    '#${cat.entryNumber.toString().padLeft(3, '0')}',
+                    style: gfBody(12, c: GC.gold),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Compartilhar
+          _OptionRow(
+            icon: '📤',
+            label: 'Compartilhar esse gatinho',
+            color: GC.gold,
+            onTap: () async {
+              Navigator.pop(context);
+              await Share.shareXFiles(
+                [XFile(cat.imagePath)],
+                text: '🐾 Encontrei esse gatinho!\n$catLabel na minha Gatodex ✨\n\nTransforme, Colecione, Ame!',
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          // Excluir
+          _OptionRow(
+            icon: '🗑️',
+            label: 'Excluir da Gatodex',
+            color: Colors.redAccent,
+            onTap: () async {
+              Navigator.pop(context);
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  backgroundColor: GC.bgCard,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  title: Text('Excluir $catLabel? 🗑️',
+                      style: gfDisplay(16, c: Colors.white)),
+                  content: Text(
+                    'Essa ação não pode ser desfeita.',
+                    style: gfBody(14, c: GC.textMuted),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text('Cancelar', style: gfBody(14, c: GC.textMuted)),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                      child: Text('Excluir', style: gfDisplay(14, c: Colors.redAccent)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await DatabaseService().delete(cat.id!, cat.imagePath);
+                onReload();
+              }
+            },
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    );
+  }
+}
+
+class _OptionRow extends StatelessWidget {
+  final String icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _OptionRow({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Row(
           children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.file(
-                    File(cat.imagePath),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const ColoredBox(
-                      color: GC.bgElevated,
-                      child: Center(child: Text('🐈', style: TextStyle(fontSize: 40))),
-                    ),
-                  ),
-                  // Bottom fade overlay
-                  Positioned(
-                    bottom: 0, left: 0, right: 0,
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            GC.bgCard.withValues(alpha: 0.9),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Gold number badge
-                  Positioned(
-                    top: 8, right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: GC.gold,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: GC.gold.withValues(alpha: 0.5),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        '#${cat.entryNumber.toString().padLeft(3, '0')}',
-                        style: const TextStyle(
-                          color: Color(0xFF1A0050),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cat.name ?? 'Gato #${cat.entryNumber}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      const Text('📅', style: TextStyle(fontSize: 10)),
-                      const SizedBox(width: 3),
-                      Text(
-                        date,
-                        style: const TextStyle(color: GC.textMuted, fontSize: 10),
-                      ),
-                      const Spacer(),
-                      Text(
-                        hasLocation ? '📍' : '❓',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: hasLocation ? GC.pink : Colors.white24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            Text(icon, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 14),
+            Text(label, style: gfDisplay(15, c: color)),
           ],
         ),
       ),

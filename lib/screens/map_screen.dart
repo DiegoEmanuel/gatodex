@@ -42,18 +42,11 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         backgroundColor: GC.bgDeep,
         foregroundColor: Colors.white,
-        title: const Row(
+        title: Row(
           children: [
-            Text('🗺️', style: TextStyle(fontSize: 20)),
-            SizedBox(width: 8),
-            Text(
-              'Mapa de Gatos',
-              style: TextStyle(
-                color: GC.gold,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
-            ),
+            const Text('🗺️', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text('Mapa de Gatos', style: gfDisplay(20, c: GC.gold)),
           ],
         ),
         bottom: PreferredSize(

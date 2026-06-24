@@ -82,15 +82,11 @@ class _NameCatSheetState extends State<NameCatSheet> {
                 children: [
                   Text(
                     'Gato #${widget.entryNumber.toString().padLeft(3, '0')} capturado!',
-                    style: const TextStyle(
-                      color: GC.gold,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: gfDisplay(16, c: GC.gold),
                   ),
-                  const Text(
+                  Text(
                     'Você quer dar um nome a ele?',
-                    style: TextStyle(color: GC.textMuted, fontSize: 13),
+                    style: gfBody(13, c: GC.textMuted),
                   ),
                 ],
               ),
@@ -163,9 +159,9 @@ class _NameCatSheetState extends State<NameCatSheet> {
                     ),
                     child: Text(
                       name,
-                      style: TextStyle(
-                        color: active ? const Color(0xFF1A0050) : Colors.white70,
-                        fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                      style: gfBody(13,
+                        w: active ? FontWeight.w700 : FontWeight.w500,
+                        c: active ? GC.deepPurple : Colors.white70,
                       ),
                     ),
                   ),
@@ -178,7 +174,7 @@ class _NameCatSheetState extends State<NameCatSheet> {
             children: [
               TextButton(
                 onPressed: _skip,
-                child: const Text('Pular', style: TextStyle(color: GC.textMuted)),
+                child: Text('Pular', style: gfBody(14, c: GC.textMuted)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -205,10 +201,7 @@ class _NameCatSheetState extends State<NameCatSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: const Text(
-                      'Salvar nome 🐾',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    child: Text('Salvar nome 🐾', style: gfDisplay(15, c: GC.deepPurple)),
                   ),
                 ),
               ),
@@ -246,10 +239,9 @@ class _TabButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            color: active ? Colors.white : GC.textMuted,
-            fontSize: 12,
-            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          style: gfBody(12,
+            w: active ? FontWeight.w700 : FontWeight.w500,
+            c: active ? Colors.white : GC.textMuted,
           ),
         ),
       ),

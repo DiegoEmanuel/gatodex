@@ -392,21 +392,17 @@ class _CaptureScreenState extends State<CaptureScreen>
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: GC.gold.withValues(alpha: 0.4)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('✨', style: TextStyle(fontSize: 14)),
-                SizedBox(width: 6),
+                const Text('✨', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
                 Text(
                   'Toque quando a barra estiver no ponto!',
-                  style: TextStyle(
-                    color: GC.goldLight,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                  style: gfDisplay(13, c: GC.goldLight),
                 ),
-                SizedBox(width: 6),
-                Text('✨', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
+                const Text('✨', style: TextStyle(fontSize: 14)),
               ],
             ),
           ),
@@ -454,11 +450,7 @@ class _CaptureScreenState extends State<CaptureScreen>
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 _resultMessage ?? '',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: gfDisplay(20, c: Colors.white),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -477,7 +469,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                 ),
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Voltar'),
+                child: Text('Voltar', style: gfBody(15, c: GC.textMuted)),
               ),
           ],
         ),
@@ -512,7 +504,7 @@ class _GoldResultButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         ),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        child: Text(label, style: gfDisplay(16, c: GC.deepPurple)),
       ),
     );
   }
