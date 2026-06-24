@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 
@@ -33,12 +34,7 @@ class GatodexApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gatodex',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFFFF8C00),
-          surface: const Color(0xFF1A1A2E),
-        ),
-      ),
+      theme: gatodexTheme(),
       home: HomeScreen(cameras: cameras),
     );
   }

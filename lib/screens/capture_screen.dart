@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import '../app_theme.dart';
 import '../models/cat_entry.dart';
 import '../services/database_service.dart';
 import '../widgets/name_cat_sheet.dart';
@@ -30,7 +31,6 @@ class _CaptureScreenState extends State<CaptureScreen>
   bool _gameOver = false;
   String? _resultMessage;
 
-  // The dot is fixed at 30% of the bar width; success zone ±8%
   static const double _dotPosition = 0.30;
   static const double _successZone = 0.08;
 
@@ -118,7 +118,6 @@ class _CaptureScreenState extends State<CaptureScreen>
         position = null;
       }
 
-      // Checagem de duplicata: avisa se já tem captura a menos de 50m
       if (position != null && mounted) {
         final nearby = await DatabaseService().findNearby(
           position.latitude,
@@ -129,20 +128,21 @@ class _CaptureScreenState extends State<CaptureScreen>
           final proceed = await showDialog<bool>(
             context: context,
             builder: (_) => AlertDialog(
-              backgroundColor: const Color(0xFF16213E),
-              title: const Text('Gato já capturado?', style: TextStyle(color: Colors.white)),
+              backgroundColor: GC.bgCard,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('Gato já capturado? 🤔', style: TextStyle(color: Colors.white)),
               content: Text(
                 'Parece que você capturou um gato bem perto daqui antes (Gato #${nearby.entryNumber}). É o mesmo gato?',
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: GC.textMuted),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+                  child: const Text('Cancelar', style: TextStyle(color: GC.textMuted)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFFFF8C00)),
+                  style: TextButton.styleFrom(foregroundColor: GC.gold),
                   child: const Text('Capturar mesmo assim'),
                 ),
               ],
@@ -212,7 +212,7 @@ class _CaptureScreenState extends State<CaptureScreen>
           fit: StackFit.expand,
           children: [
             _buildCameraPreview(),
-            _buildOrangeBorder(),
+            _buildPurpleBorder(),
             _buildTopHUD(),
             if (_gameOver) _buildResultOverlay(),
             if (!_gameOver) _buildHint(),
@@ -224,18 +224,25 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   Widget _buildCameraPreview() {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return const Center(child: CircularProgressIndicator(color: Colors.orange));
+      return const Center(child: CircularProgressIndicator(color: GC.gold));
     }
     return CameraPreview(_cameraController!);
   }
 
-  Widget _buildOrangeBorder() {
+  Widget _buildPurpleBorder() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 100),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFFF8C00), width: 3),
-          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: GC.gold, width: 2.5),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: GC.gold.withValues(alpha: 0.25),
+              blurRadius: 18,
+              spreadRadius: 2,
+            ),
+          ],
         ),
       ),
     );
@@ -248,7 +255,7 @@ class _CaptureScreenState extends State<CaptureScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildTriesCounter(),
+            _buildHeartsCounter(),
             const SizedBox(height: 8),
             _buildTimingBar(),
           ],
@@ -257,26 +264,24 @@ class _CaptureScreenState extends State<CaptureScreen>
     );
   }
 
-  Widget _buildTriesCounter() {
+  Widget _buildHeartsCounter() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: GC.bgDeep.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: GC.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🐾', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 6),
-          Text(
-            '$_triesLeft / $_maxTries tries',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+          for (int i = 0; i < _maxTries; i++) ...[
+            if (i > 0) const SizedBox(width: 4),
+            Text(
+              i < _triesLeft ? '❤️' : '🖤',
+              style: const TextStyle(fontSize: 18),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -284,10 +289,11 @@ class _CaptureScreenState extends State<CaptureScreen>
 
   Widget _buildTimingBar() {
     return Container(
-      height: 28,
+      height: 30,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(14),
+        color: GC.bgDeep.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: GC.purple.withValues(alpha: 0.4)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: AnimatedBuilder(
@@ -302,16 +308,16 @@ class _CaptureScreenState extends State<CaptureScreen>
               return Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // track
+                  // Track
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: GC.purple.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
-                  // success zone highlight
+                  // Success zone
                   Positioned(
                     left: ((_dotPosition - _successZone) * width).clamp(0, width),
                     width: _successZone * 2 * width,
@@ -319,25 +325,18 @@ class _CaptureScreenState extends State<CaptureScreen>
                     bottom: 0,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.4),
+                        color: GC.gold.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
-                  // fixed dot (target)
+                  // Fixed dot (target) — paw print emoji
                   Positioned(
-                    left: dotX - 6,
-                    top: -2,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFF8C00),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    left: dotX - 8,
+                    top: -5,
+                    child: const Text('🐾', style: TextStyle(fontSize: 14)),
                   ),
-                  // moving bar indicator
+                  // Moving bar indicator
                   Positioned(
                     left: barX - 2,
                     top: 0,
@@ -345,8 +344,11 @@ class _CaptureScreenState extends State<CaptureScreen>
                     child: Container(
                       width: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: GC.gold,
                         borderRadius: BorderRadius.circular(2),
+                        boxShadow: [
+                          BoxShadow(color: GC.gold.withValues(alpha: 0.6), blurRadius: 6),
+                        ],
                       ),
                     ),
                   ),
@@ -362,17 +364,18 @@ class _CaptureScreenState extends State<CaptureScreen>
   Widget _buildHint() {
     return Positioned(
       bottom: 48,
-      left: 0,
-      right: 0,
+      left: 24,
+      right: 24,
       child: Column(
         children: [
           if (_resultMessage != null)
             Container(
               margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(12),
+                color: GC.bgDeep.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: GC.purple.withValues(alpha: 0.4)),
               ),
               child: Text(
                 _resultMessage!,
@@ -381,18 +384,30 @@ class _CaptureScreenState extends State<CaptureScreen>
               ),
             ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF8C00).withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Text(
-              'Toque quando a barra estiver no ponto!',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+              gradient: LinearGradient(
+                colors: [GC.purple.withValues(alpha: 0.9), GC.bgElevated.withValues(alpha: 0.9)],
               ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: GC.gold.withValues(alpha: 0.4)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('✨', style: TextStyle(fontSize: 14)),
+                SizedBox(width: 6),
+                Text(
+                  'Toque quando a barra estiver no ponto!',
+                  style: TextStyle(
+                    color: GC.goldLight,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(width: 6),
+                Text('✨', style: TextStyle(fontSize: 14)),
+              ],
             ),
           ),
         ],
@@ -403,18 +418,40 @@ class _CaptureScreenState extends State<CaptureScreen>
   Widget _buildResultOverlay() {
     final isSuccess = _resultMessage?.contains('Capturado') ?? false;
     return Container(
-      color: Colors.black.withValues(alpha: 0.75),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            GC.bgDeep.withValues(alpha: 0.9),
+            GC.bgElevated.withValues(alpha: 0.95),
+          ],
+        ),
+      ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               isSuccess ? '🎉' : '😿',
-              style: const TextStyle(fontSize: 64),
+              style: const TextStyle(fontSize: 72),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            if (isSuccess) ...[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('⭐', style: TextStyle(fontSize: 20, color: GC.gold.withValues(alpha: 0.8))),
+                  const SizedBox(width: 6),
+                  const Text('✨', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 6),
+                  Text('⭐', style: TextStyle(fontSize: 20, color: GC.gold.withValues(alpha: 0.8))),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 _resultMessage ?? '',
                 style: const TextStyle(
@@ -425,21 +462,57 @@ class _CaptureScreenState extends State<CaptureScreen>
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF8C00),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+            const SizedBox(height: 36),
+            if (isSuccess)
+              _GoldResultButton(
+                label: 'Ver Gatodex ✨',
+                onPressed: () => Navigator.pop(context, true),
+              )
+            else
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: GC.textMuted,
+                  side: BorderSide(color: GC.purple.withValues(alpha: 0.5)),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                 ),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Voltar'),
               ),
-              onPressed: () => Navigator.pop(context, isSuccess),
-              child: Text(isSuccess ? 'Ver Gatodex' : 'Voltar'),
-            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _GoldResultButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  const _GoldResultButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [GC.gold, Color(0xFFFFB300)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(color: GC.gold.withValues(alpha: 0.45), blurRadius: 18, offset: const Offset(0, 5)),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          foregroundColor: const Color(0xFF1A0050),
+          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        ),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
     );
   }

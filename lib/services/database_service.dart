@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/cat_entry.dart';
@@ -51,6 +52,12 @@ class DatabaseService {
       entryNumber: entry.entryNumber,
       name: entry.name,
     );
+  }
+
+  Future<void> delete(int id, String imagePath) async {
+    final db = await database;
+    await db.delete('cats', where: 'id = ?', whereArgs: [id]);
+    try { await File(imagePath).delete(); } catch (_) {}
   }
 
   Future<void> updateName(int id, String name) async {
