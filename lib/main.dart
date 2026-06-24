@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'firebase_options.dart';
 import 'screens/home_screen.dart';
+import 'services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,14 @@ Future<void> main() async {
   };
 
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+
+  // Garante um perfil guest (anônimo) para ter um UID estável no Storage.
+  // Falha de rede aqui não deve travar o app — o upload é não-crítico.
+  try {
+    await AuthService().ensureSignedIn();
+  } catch (e, s) {
+    FirebaseCrashlytics.instance.recordError(e, s, fatal: false);
+  }
 
   final cameras = await availableCameras();
   runApp(GatodexApp(cameras: cameras));
