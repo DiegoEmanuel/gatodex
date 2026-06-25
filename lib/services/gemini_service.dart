@@ -35,12 +35,14 @@ class CatCardData {
 
 class GeminiService {
   // ── Gemini (primário) ──────────────────────────────────────────────────────
-  static const _geminiKey = '__REMOVED_SECRET__';
+  // Chaves injetadas em build/run via --dart-define (NUNCA hardcoded).
+  // Ex: flutter run --dart-define=GEMINI_API_KEY=... --dart-define=GROQ_API_KEY=...
+  static const _geminiKey = String.fromEnvironment('GEMINI_API_KEY');
   static const _geminiUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
   // ── Groq (primário) ───────────────────────────────────────────────────────
-  static const _groqKey = '__REMOVED_SECRET__';
+  static const _groqKey = String.fromEnvironment('GROQ_API_KEY');
   static const _groqUrl = 'https://api.groq.com/openai/v1/chat/completions';
   static const _groqModel = 'meta-llama/llama-4-scout-17b-16e-instruct';
 

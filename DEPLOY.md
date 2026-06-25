@@ -54,6 +54,25 @@ Com Play App Signing, o Google **re-assina** o app com a chave de produção del
   gh secret set PLAY_SERVICE_ACCOUNT_JSON --repo DiegoEmanuel/gatodex < caminho/para/service-account.json
   ```
 
+## API keys de IA (Gemini / Groq) 🔐
+
+As chaves saíram do código ([lib/services/gemini_service.dart](lib/services/gemini_service.dart)) e agora vêm via `--dart-define`.
+
+- **Local:**
+  ```bash
+  flutter run \
+    --dart-define=GEMINI_API_KEY=sua_chave \
+    --dart-define=GROQ_API_KEY=sua_chave
+  ```
+- **CI:** o workflow injeta a partir dos secrets `GEMINI_API_KEY` e `GROQ_API_KEY`. Configure-os:
+  ```bash
+  gh secret set GEMINI_API_KEY --repo DiegoEmanuel/gatodex
+  gh secret set GROQ_API_KEY  --repo DiegoEmanuel/gatodex
+  ```
+
+> ⚠️ **As chaves antigas foram expostas e precisam ser ROTACIONADAS** (gere novas no Google AI Studio e no Groq, revogue as antigas).
+> Mesmo via `--dart-define`, a chave é embutida no APK e pode ser extraída. O ideal a médio prazo é mover as chamadas Gemini/Groq pra um backend (ex: Cloud Function) e nunca enviar a chave pro cliente.
+
 ## Como lançar uma versão 🚀
 
 1. Ajuste a versão em [pubspec.yaml](pubspec.yaml) (ex: `version: 1.0.0+1`). O `versionCode` é sobrescrito no CI pelo número do run.
