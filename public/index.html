@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gatodex — Transforme, Colecione, Ame! 🐾</title>
+  <meta name="description" content="Transforme as fotos dos seus gatos em cartas colecionáveis mágicas. Baixe o Gatodex e comece a sua coleção!">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Gatodex — Transforme, Colecione, Ame! 🐾">
+  <meta property="og:description" content="Transforme as fotos dos seus gatos em cartas colecionáveis mágicas.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gatodex-app.web.app">
+
+  <!-- Fontes do app: Fredoka (display) + Nunito (corpo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep: #0D0627;
+      --bg-card: #1C0E4A;
+      --bg-elevated: #2A1565;
+      --purple: #7B3FC8;
+      --purple-light: #9B6FE8;
+      --gold: #F0C040;
+      --gold-light: #FFE082;
+      --pink: #FF6EB4;
+      --text-muted: #B0A0D0;
+      --deep-purple: #1A0050;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Nunito", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #fff;
+      background: var(--bg-deep);
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .display { font-family: "Fredoka", sans-serif; }
+
+    /* glow de fundo decorativo */
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(123,63,200,.35), transparent 45%),
+        radial-gradient(circle at 85% 25%, rgba(255,110,180,.20), transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(240,192,64,.12), transparent 50%);
+    }
+    .wrap { position: relative; z-index: 1; }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 48px 20px;
+    }
+    .paws { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .paw {
+      position: absolute; font-size: 26px; opacity: .14;
+      animation: float 7s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-22px) rotate(12deg); }
+    }
+
+    /* mascote / carta */
+    .cat-card {
+      width: 150px; height: 200px;
+      border-radius: 26px;
+      background: linear-gradient(160deg, var(--bg-elevated), var(--bg-card));
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 0 4px rgba(240,192,64,.15), 0 18px 50px rgba(0,0,0,.55), 0 0 60px rgba(255,110,180,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 78px;
+      margin-bottom: 26px;
+      animation: bob 4s ease-in-out infinite;
+      position: relative;
+    }
+    .cat-card::after {
+      content: "★ LENDÁRIO";
+      position: absolute; bottom: 12px;
+      font-family: "Fredoka"; font-size: .62rem; letter-spacing: 1px;
+      color: var(--gold-light); font-weight: 600;
+    }
+    @keyframes bob { 0%,100%{ transform: translateY(0) rotate(-2deg);} 50%{ transform: translateY(-14px) rotate(2deg);} }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      font-weight: 700; line-height: 1.1;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+    .hero h1 .gold {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .tagline {
+      font-size: clamp(1.05rem, 4vw, 1.45rem);
+      color: var(--text-muted); font-weight: 600;
+      margin-bottom: 38px;
+    }
+    .tagline .g { color: var(--gold-light); }
+    .tagline .p { color: var(--pink); }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--deep-purple);
+      font-family: "Fredoka"; font-size: 1.2rem; font-weight: 600;
+      padding: 17px 42px; border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 12px 34px rgba(240,192,64,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .cta:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 18px 46px rgba(240,192,64,.6); }
+    .cta:active { transform: translateY(0) scale(.98); }
+    .cta-note { margin-top: 14px; font-size: .9rem; color: var(--text-muted); }
+
+    /* ── SEÇÕES ─────────────────────────────── */
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 600; padding: 70px 20px 0;
+    }
+    .section-title .heart { color: var(--pink); }
+
+    .features {
+      max-width: 1000px; margin: 0 auto;
+      padding: 44px 20px 20px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: linear-gradient(165deg, var(--bg-card), var(--deep-purple));
+      border: 1px solid rgba(155,111,232,.30);
+      border-radius: 24px;
+      padding: 34px 24px; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4);
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: var(--gold);
+      box-shadow: 0 18px 44px rgba(123,63,200,.45);
+    }
+    .card .ico {
+      font-size: 48px; display: inline-block;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.4));
+    }
+    .card h3 { color: var(--gold-light); margin: 16px 0 8px; font-size: 1.3rem; font-weight: 600; }
+    .card p { color: var(--text-muted); font-size: 1rem; line-height: 1.6; }
+
+    /* ── FINAL ──────────────────────────────── */
+    .final {
+      text-align: center;
+      margin: 70px auto; max-width: 760px;
+      padding: 56px 28px;
+      background: linear-gradient(160deg, var(--purple), var(--deep-purple));
+      border: 2px solid rgba(240,192,64,.3);
+      border-radius: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .final h2 { font-size: clamp(1.7rem, 6vw, 2.4rem); margin-bottom: 12px; font-weight: 600; }
+    .final p { color: var(--text-muted); margin-bottom: 30px; font-size: 1.1rem; font-weight: 600; }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      text-align: center; padding: 36px 20px 44px;
+      color: var(--text-muted); font-size: .9rem; line-height: 1.9;
+    }
+    footer a { color: var(--gold-light); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="paws">
+      <span class="paw" style="top:10%;left:8%;">🐾</span>
+      <span class="paw" style="top:24%;left:82%;animation-delay:1s;">🐾</span>
+      <span class="paw" style="top:62%;left:14%;animation-delay:2s;">🐾</span>
+      <span class="paw" style="top:74%;left:72%;animation-delay:.5s;">🐾</span>
+      <span class="paw" style="top:44%;left:50%;animation-delay:1.5s;">✨</span>
+      <span class="paw" style="top:16%;left:46%;animation-delay:2.6s;">✨</span>
+      <span class="paw" style="top:84%;left:40%;animation-delay:.9s;">💜</span>
+    </div>
+
+    <div class="cat-card">🐱</div>
+    <h1>Venha se divertir com o<br><span class="gold">Gatodex</span>! 🐾</h1>
+    <p class="tagline"><span class="g">Transforme</span>, <span class="g">Colecione</span> e <span class="p">Ame</span> seus gatos ✨</p>
+
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.diegoemanuel.gatodex" target="_blank" rel="noopener">
+      ▶️ Baixar na Google Play
+    </a>
+    <p class="cta-note">Grátis • Para Android</p>
+  </header>
+
+  <!-- FEATURES -->
+  <h2 class="section-title">Por que você vai amar <span class="heart">💜</span></h2>
+  <section class="features">
+    <div class="card">
+      <div class="ico">📸</div>
+      <h3>Capture seu gato</h3>
+      <p>Tire uma foto do seu felino e deixe a mágica começar.</p>
+    </div>
+    <div class="card">
+      <div class="ico">🃏</div>
+      <h3>Cartas únicas</h3>
+      <p>Cada gato vira uma carta colecionável com raridade própria.</p>
+    </div>
+    <div class="card">
+      <div class="ico">📚</div>
+      <h3>Monte sua coleção</h3>
+      <p>Organize todos os seus gatinhos no seu Gatodex pessoal.</p>
+    </div>
+    <div class="card">
+      <div class="ico">💌</div>
+      <h3>Compartilhe</h3>
+      <p>Mostre suas cartas favoritas para os amigos em um toque.</p>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="final">
+    <h2>Pronto pra começar a sua coleção? 🐾</h2>
+    <p>Baixe agora e transforme seu gato na carta mais fofa do mundo.</p>
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.diegoemanuel.gatodex" target="_blank" rel="noopener">
+      ▶️ Baixar o Gatodex
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    🐾 Gatodex — Transforme, Colecione, Ame!<br>
+    <a href="/privacy.html">Política de Privacidade</a> • <a href="mailto:diegoabox@gmail.com">Contato</a><br>
+    <span style="opacity:.6">© 2026 Gatodex</span>
+  </footer>
+
+</div>
+</body>
+</html>

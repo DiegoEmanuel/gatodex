@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Deploy secrets - NUNCA commitar
+.deploy-credentials.txt
+*.jks
+android/key.properties
+play-service-account.json
